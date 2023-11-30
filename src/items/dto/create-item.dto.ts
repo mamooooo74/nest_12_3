@@ -7,9 +7,9 @@ class CreateItemDto {
   @MaxLength(40)
   name: string;
 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
-  @Type(() => Number)
   price: number;
 
   @IsString()
