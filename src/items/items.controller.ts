@@ -6,11 +6,17 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { ItemsService } from './items.service';
 
 import { CreateItemDto } from './dto/create-item.dto';
-import { Item } from '@prisma/client';
+import { Item, User, UserStatus } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Role } from 'src/auth/decorator/role.decorator';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('items')
 export class ItemsController {
@@ -21,22 +27,35 @@ export class ItemsController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: number): Promise<Item> {
+  async findById(@Param('id') id: number) {
     return await this.itemsService.findById(id);
   }
 
   @Post()
-  async create(@Body() createItemDto: CreateItemDto): Promise<Item> {
-    return await this.itemsService.create(createItemDto);
+  @Role(UserStatus.PREMIUM)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  async create(
+    @Body() createItemDto: CreateItemDto,
+    @Req() { user }: { user: User },
+  ): Promise<Item> {
+    return await this.itemsService.create(createItemDto, user);
   }
 
   @Patch(':id')
-  updateStatus(@Param('id') id: number): Promise<Item> {
-    return this.itemsService.updateStatus(id);
+  @UseGuards(JwtAuthGuard)
+  updateStatus(
+    @Param('id') id: number,
+    @Req() { user }: { user: User },
+  ): Promise<Item> {
+    return this.itemsService.updateStatus(id, user);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: number): Promise<void> {
-    return await this.itemsService.delete(id);
+  @UseGuards(JwtAuthGuard)
+  async delete(
+    @Param('id') id: number,
+    @Req() { user }: { user: User },
+  ): Promise<void> {
+    return await this.itemsService.delete(id, user);
   }
 }

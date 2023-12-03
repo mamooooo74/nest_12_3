@@ -15,6 +15,11 @@ enum ItemStatus{
   SOLD_OUT
 }
 
+enum UserStatus {
+  FREE
+  PREMIUM
+}
+
 
 
 model Item {
@@ -25,4 +30,16 @@ model Item {
   status ItemStatus
   created_at DateTime @default(now()) @db.Timestamp(0)
   updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+}
+
+model User{
+  id Int @id @default(autoincrement()) 
+  name String @unique
+  password String
+  status UserStatus
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp(0)
+  items Item[]
 }
